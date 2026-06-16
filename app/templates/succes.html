@@ -1,0 +1,95 @@
+﻿{% extends "base.html" %}
+
+{% block content %}
+<section class="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/50 px-4 py-10 sm:px-6">
+  <div class="w-full max-w-2xl rounded-[2rem] bg-white p-8 shadow-2xl sm:p-12">
+    {% if erreur %}
+    <div class="space-y-6 text-center">
+      <span class="inline-flex rounded-full bg-rose-100 px-4 py-2 text-sm font-semibold text-rose-700">Erreur</span>
+      <h1 class="text-3xl font-bold text-slate-900">Impossible de réserver</h1>
+      <p class="text-slate-600">{{ erreur }}</p>
+      <a href="javascript:history.back()" class="inline-flex rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">Retour</a>
+    </div>
+    {% else %}
+    <div class="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+      <div class="space-y-6">
+        <div>
+          <span class="inline-flex rounded-full bg-emerald-100 px-4 py-2 text-sm font-semibold text-emerald-700">Confirmé</span>
+          <h1 class="mt-4 text-3xl font-bold text-slate-900">Rendez-vous réservé avec succès</h1>
+          <p class="mt-4 text-slate-600">Merci <strong>{{ nom }}</strong>, votre rendez-vous avec <strong>{{ medecin }}</strong> est planifié pour <strong>{{ date }}</strong>.</p>
+          {% if motif %}
+          <p class="mt-3 text-slate-500">Motif : <strong>{{ motif }}</strong></p>
+          {% endif %}
+        </div>
+        <div class="rounded-[1.75rem] border border-slate-200 bg-slate-50 p-6">
+          <p class="text-sm uppercase tracking-[0.3em] text-slate-500">Récapitulatif</p>
+          <div class="mt-4 space-y-3 text-slate-700">
+            <p><span class="font-semibold">Médecin :</span> {{ medecin }}</p>
+            <p><span class="font-semibold">Quand :</span> {{ date }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="flex flex-col items-stretch justify-between gap-4">
+        <button id="calendar-download" type="button" class="inline-flex w-full items-center justify-center rounded-full bg-violet-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-violet-700">Ajouter au calendrier</button>
+        <button id="ticket-download" type="button" class="inline-flex w-full items-center justify-center rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-100">Télécharger la confirmation</button>
+      </div>
+    </div>
+    <div class="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-end">
+      <a href="{{ url_for('voir_rendezvous') }}" class="inline-flex rounded-full bg-violet-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-violet-700">Voir mes RDV</a>
+      <a href="{{ url_for('medecins') }}" class="inline-flex rounded-full border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-100">Réserver un autre RDV</a>
+    </div>
+    
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const medecin = '{{ medecin }}';
+        const date = '{{ date }}';
+        const nom = '{{ nom }}';
+        const motif = '{{ motif or "" }}';
+
+        function createIcs() {
+          const now = new Date();
+          const parts = date.split(' à ');
+          const start = new Date(parts[0] + 'T' + (parts[1] || '09:00'));
+          const end = new Date(start.getTime() + 30 * 60000);
+          const formatDate = d => d.toISOString().replace(/[-:]|\.\d{3}/g, '');
+          return [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//MédiRendez-vous//EN',
+            'BEGIN:VEVENT',
+            `UID:${Date.now()}@medirendezvous.local`,
+            `DTSTAMP:${formatDate(now)}`,
+            `DTSTART:${formatDate(start)}`,
+            `DTEND:${formatDate(end)}`,
+            `SUMMARY:Rendez-vous avec ${medecin}`,
+            `DESCRIPTION:Patient ${nom}${motif ? ' - Motif : ' + motif : ''}`,
+            `LOCATION:MédiRendez-vous`,
+            'END:VEVENT',
+            'END:VCALENDAR'
+          ].join('\r\n');
+        }
+
+        function downloadFile(filename, content, type) {
+          const blob = new Blob([content], { type });
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(blob);
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+
+        document.getElementById('calendar-download').addEventListener('click', function () {
+          downloadFile('medirendezvous.ics', createIcs(), 'text/calendar;charset=utf-8');
+        });
+
+        document.getElementById('ticket-download').addEventListener('click', function () {
+          const confirmation = `Rendez-vous confirmé pour ${nom} avec ${medecin} le ${date}.${motif ? '\nMotif : ' + motif : ''}`;
+          downloadFile('confirmation.txt', confirmation, 'text/plain;charset=utf-8');
+        });
+      });
+    </script>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
