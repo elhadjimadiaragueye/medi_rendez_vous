@@ -1,1 +1,16 @@
+# Fichiers Python
+__pycache__/
+*.py[cod]
 
+# Base de données
+app.db
+*.sqlite
+
+# Dossiers systèmes et IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Fichiers d'environnement
+.env
+venv/
