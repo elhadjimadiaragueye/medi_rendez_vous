@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+  <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <p class="text-sm font-semibold uppercase tracking-[0.3em] text-violet-600">Administration</p>
+      <h1 class="mt-3 text-3xl font-bold text-slate-900">Gestion des patients</h1>
+      <p class="mt-4 text-slate-600">Consultez et gérez les comptes patients enregistrés sur la plateforme.</p>
+    </div>
+  </div>
+  
+  <div class="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-soft">
+    <table class="min-w-full divide-y divide-slate-200">
+      <thead class="bg-slate-50">
+        <tr>
+          <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Nom</th>
+          <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Email</th>
+          <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Téléphone</th>
+          <th class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Statut</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-200 bg-white">
+        {% for patient in patients %}
+        <tr class="hover:bg-slate-50">
+          <td class="px-6 py-4 text-sm text-slate-700">{{ patient.prenom }} {{ patient.nom }}</td>
+          <td class="px-6 py-4 text-sm text-slate-700">{{ patient.email }}</td>
+          <td class="px-6 py-4 text-sm text-slate-700">{{ patient.telephone or '—' }}</td>
+          <td class="px-6 py-4 text-sm text-slate-700">
+            <span class="rounded-full px-3 py-1 text-xs font-semibold {{ 'bg-emerald-100 text-emerald-700' if patient.user and patient.user.actif else 'bg-rose-100 text-rose-700' }}">
+              {{ 'Actif' if patient.user and patient.user.actif else 'Inactif' }}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
