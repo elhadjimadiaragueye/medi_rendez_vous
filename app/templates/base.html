@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MédiRendez-vous</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: { sans: ['Inter', 'sans-serif'] },
+            boxShadow: { soft: '0 25px 60px rgba(15, 23, 42, 0.12)' }
+          }
+        }
+      }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="font-sans bg-slate-50 text-slate-900">
+    <header class="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
+      <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+        <a href="/" class="flex items-center gap-3 text-slate-900">
+          <span class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-600 text-white shadow-soft">M</span>
+          <div>
+            <p class="text-sm font-semibold uppercase tracking-[0.24em]">MédiRendez-vous</p>
+            <p class="text-xs text-slate-500">Plateforme médicale</p>
+          </div>
+        </a>
+        
+        <div class="flex items-center gap-3 lg:hidden">
+          <button id="mobile-menu-button" type="button" class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-900 shadow-sm transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-violet-500">
+            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+          </button>
+        </div>
+
+        <nav class="hidden items-center gap-8 lg:flex text-sm font-medium text-slate-600">
+          <a href="/" class="hover:text-violet-700">Accueil</a>
+          <a href="{{ url_for('voir_rendezvous') }}" class="hover:text-violet-700">Rendez-vous</a>
+          <a href="{{ url_for('medecins') }}" class="hover:text-violet-700">Médecins</a>
+          <a href="{{ url_for('triage') }}" class="hover:text-violet-700">Diagnostic</a>
+        </nav>
+
+        <div class="hidden items-center gap-3 lg:flex">
+          <a href="{{ url_for('triage') }}" class="rounded-full bg-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-soft transition hover:bg-violet-700">Diagnostic IA</a>
+          {% if current_user.is_authenticated %}
+            {% if current_user.role == 'patient' %}
+            <a href="{{ url_for('dashboard_patient') }}" class="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-violet-500 hover:text-violet-700">Mon espace</a>
+            {% elif current_user.role == 'medecin' %}
+            <a href="{{ url_for('dashboard_medecin') }}" class="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-violet-500 hover:text-violet-700">Mon espace</a>
+            {% else %}
+            <a href="{{ url_for('admin_dashboard') }}" class="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-violet-500 hover:text-violet-700">Administration</a>
+            {% endif %}
+            <a href="{{ url_for('logout') }}" class="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-violet-500 hover:text-violet-700">Déconnexion</a>
+          {% else %}
+            <a href="{{ url_for('login') }}" class="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-violet-500 hover:text-violet-700">Se connecter</a>
+            <a href="{{ url_for('register_patient') }}" class="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-violet-500 hover:text-violet-700">S’inscrire</a>
+          {% endif %}
+        </div>
+      </div>
+
+      <div id="mobile-menu" class="hidden border-t border-slate-200 bg-white/95 px-4 pb-6 shadow-sm lg:hidden">
+        <div class="space-y-3 pt-4">
+          <a href="/" class="block rounded-2xl px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-violet-50">Accueil</a>
+          <a href="{{ url_for('voir_rendezvous') }}" class="block rounded-2xl px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-violet-50">Rendez-vous</a>
+          <a href="{{ url_for('medecins') }}" class="block rounded-2xl px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-violet-50">Médecins</a>
+          <a href="{{ url_for('triage') }}" class="block rounded-2xl px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-violet-50">Diagnostic</a>
+          {% if current_user.is_authenticated %}
+            <a href="{{ url_for('dashboard_patient') if current_user.role == 'patient' else (url_for('dashboard_medecin') if current_user.role == 'medecin' else url_for('admin_dashboard')) }}" class="block rounded-full border border-slate-300 bg-white px-4 py-3 text-center text-sm font-semibold text-slate-700">Mon espace</a>
+            <a href="{{ url_for('logout') }}" class="block rounded-full border border-slate-300 bg-white px-4 py-3 text-center text-sm font-semibold text-slate-700">Déconnexion</a>
+          {% else %}
+            <a href="{{ url_for('login') }}" class="block rounded-full border border-slate-300 bg-white px-4 py-3 text-center text-sm font-semibold text-slate-700">Se connecter</a>
+            <a href="{{ url_for('register_patient') }}" class="block rounded-full border border-slate-300 bg-white px-4 py-3 text-center text-sm font-semibold text-slate-700">Créer un compte</a>
+          {% endif %}
+        </div>
+      </div>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <section class="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+      <div class="space-y-3">
+        {% for category, message in messages %}
+        <div class="rounded-[1.5rem] border px-5 py-4 text-sm {% if category == 'success' %}border-emerald-200 bg-emerald-50 text-emerald-700{% elif category == 'danger' or category == 'error' %}border-rose-200 bg-rose-50 text-rose-700{% else %}border-slate-200 bg-slate-50 text-slate-700{% endif %}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+    {% endwith %}
+
+    <main class="min-h-screen">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="border-t border-slate-200 bg-white/80 py-10 text-center text-sm text-slate-500">
+        <div class="mx-auto max-w-7xl px-4">
+            <p>© 2026 MédiRendez-vous • Solution de prise de rendez-vous et de triage médical.</p>
+        </div>
+    </footer>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const mobileToggle = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        if (mobileToggle && mobileMenu) {
+          mobileToggle.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+        }
+      });
+    </script>
+</body>
+</html>
