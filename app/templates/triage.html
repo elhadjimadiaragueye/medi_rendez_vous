@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
+  <div class="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+    <div class="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-soft">
+      <div class="space-y-6">
+        <div>
+          <p class="text-sm font-semibold uppercase tracking-[0.3em] text-violet-600">Triage intelligent</p>
+          <h1 class="mt-3 text-3xl font-bold text-slate-900 sm:text-4xl">Décrivez vos symptômes</h1>
+          <p class="mt-4 text-slate-600">Notre assistant IA analyse votre texte et propose une orientation rapide adaptée à vos signes cliniques.</p>
+        </div>
+        
+        <div class="rounded-[1.75rem] bg-slate-50 p-6 shadow-sm">
+          <div class="space-y-4">
+            <div class="rounded-[1.5rem] bg-white px-5 py-4 text-slate-800 shadow-sm">
+              <p class="font-semibold">Bonjour, je suis là pour vous aider.</p>
+              <p class="mt-2 text-sm text-slate-600">Décrivez vos symptômes, ajoutez des tags rapides et lancez l’analyse.</p>
+            </div>
+            <div class="rounded-[1.5rem] bg-violet-600 px-5 py-4 text-white shadow-soft">
+              <p class="font-semibold">L’IA vous aide à choisir la meilleure orientation.</p>
+              <p class="mt-2 text-sm text-violet-100">Ce service est indicatif et ne remplace pas un avis médical professionnel.</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="rounded-[1.75rem] bg-white p-6 shadow-sm">
+          <p class="text-sm font-semibold uppercase tracking-[0.3em] text-slate-500">Tags rapides</p>
+          <div class="mt-4 flex flex-wrap gap-3">
+            {% for tag in ['Fièvre', 'Fatigue', 'Toux', 'Nausée', 'Maux de tête', 'Douleur'] %}
+            <button type="button" data-tag="{{ tag }}" class="tag-button inline-flex items-center rounded-full border border-slate-200 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-violet-50 hover:text-violet-700">{{ tag }}</button>
+            {% endfor %}
+          </div>
+        </div>
+        
+        <form method="POST" action="{{ url_for('triage') }}" class="space-y-6">
+          {% if csrf_token %}
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          {% endif %}
+          <div>
+            <label class="mb-2 block text-sm font-semibold text-slate-700">Symptômes</label>
+            <textarea id="symptomes-input" name="symptomes" rows="6" required placeholder="Ex : fièvre, toux, douleur thoracique..." class="w-full rounded-[1.5rem] border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-900 outline-none transition focus:border-violet-500 focus:ring-2 focus:ring-violet-100"></textarea>
+          </div>
+          <button type="submit" class="inline-flex w-full items-center justify-center rounded-full bg-violet-600 px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-violet-700">Analyser maintenant</button>
+        </form>
+      </div>
+    </div>
+    
+    <aside class="space-y-6">
+      <div class="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-soft">
+        <p class="text-sm font-semibold uppercase tracking-[0.3em] text-slate-500">Disclaimer médical</p>
+        <p class="mt-4 text-slate-700">Ce diagnostic basé sur l’IA est une première orientation. En cas de symptômes graves ou persistants, contactez un professionnel de santé sans délai.</p>
+      </div>
+      <div class="rounded-[2rem] border border-orange-200 bg-orange-50 p-6 shadow-sm">
+        <p class="text-sm font-semibold uppercase tracking-[0.3em] text-orange-600">Important</p>
+        <p class="mt-3 text-sm text-orange-700">L’outil ne remplace pas un examen médical. Si vous avez un saignement, une détresse respiratoire ou un malaise aigu, appelez les urgences.</p>
+      </div>
+      <div class="grid gap-4">
+        <article class="rounded-[1.75rem] bg-slate-950 p-6 text-white shadow-soft transition hover:scale-105 duration-300">
+          <p class="text-sm uppercase tracking-[0.3em] text-violet-300">Précision IA</p>
+          <p class="mt-4 text-3xl font-semibold">94%</p>
+          <p class="mt-2 text-sm text-slate-300">Évaluations régulières pour améliorer les recommandations.</p>
+        </article>
+        <article class="rounded-[1.75rem] bg-white p-6 shadow-soft transition hover:scale-105 duration-300">
+          <p class="text-sm uppercase tracking-[0.3em] text-violet-600">Analyses effectuées</p>
+          <p class="mt-4 text-3xl font-semibold text-slate-900">{{ total_analyses }}+</p>
+          <p class="mt-2 text-sm text-slate-500">Confiance accumulée sur de nombreux cas.</p>
+        </article>
+        <article class="rounded-[1.75rem] bg-white p-6 shadow-soft transition hover:scale-105 duration-300">
+          <p class="text-sm uppercase tracking-[0.3em] text-violet-600">Satisfaction</p>
+          <p class="mt-4 text-3xl font-semibold text-slate-900">4.8/5</p>
+          <p class="mt-2 text-sm text-slate-500">Retours positifs de nos patients.</p>
+        </article>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const buttons = document.querySelectorAll('.tag-button');
+    const symptomsInput = document.getElementById('symptomes-input');
+
+    buttons.forEach(button => {
+      button.addEventListener('click', function () {
+        const tag = this.dataset.tag;
+        const current = symptomsInput.value.trim();
+        if (current === "") {
+            symptomsInput.value = tag;
+        } else if (!current.includes(tag)) {
+            symptomsInput.value = current + ", " + tag;
+        }
+        symptomsInput.focus();
+      });
+    });
+  });
+</script>
+{% endblock %}
